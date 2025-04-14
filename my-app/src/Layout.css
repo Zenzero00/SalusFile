@@ -1,0 +1,30 @@
+/* Layout.css */
+.sidebar a {
+  color: white;
+  text-decoration: none;
+  display: block;
+  padding: 10px;
+}
+
+.sidebar a:hover {
+  background: #0D47A1;
+}
+
+.sidebar a.active {
+  font-weight: bold;
+  border-left: 3px solid #43A047;
+  padding-left: 7px; /* Ajuste para el borde */
+}
+
+.logout {
+  background: none !important;
+  border: none;
+  color: #ff4444 !important;
+  cursor: pointer;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+}
