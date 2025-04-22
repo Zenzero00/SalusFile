@@ -1,7 +1,10 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import './dashboard.css';
 
 const Dashboard = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="main-content">
       <h1>Bienvenido al Dashboard</h1>
@@ -19,7 +22,10 @@ const Dashboard = () => {
           <p>45</p>
         </div>
       </div>
-      <button className="new-appointment" onClick={() => alert('Función no implementada aún')}>
+      <button
+        className="new-appointment"
+        onClick={() => navigate('/citas')}
+      >
         + Nueva Cita
       </button>
     </div>

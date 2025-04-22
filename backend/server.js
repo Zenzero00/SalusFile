@@ -59,14 +59,55 @@ app.post('/api/login', async (req, res) => {
 app.get('/api/citas', async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT c.id_cita, c.fecha_cita, p.nombre AS nombre_paciente, c.notas AS motivo
+      SELECT 
+        c.id_cita, 
+        c.fecha_cita, 
+        p.nombre AS nombre_paciente, 
+        m.nombre AS nombre_medico, 
+        c.estado, 
+        c.notas
       FROM citas c
       JOIN pacientes p ON c.id_paciente = p.id_paciente
+      JOIN medicos m ON c.id_medico = m.id_medico
     `);
     res.json(result.rows);
   } catch (error) {
     console.error(error.message);
     res.status(500).send('Error al obtener las citas');
+  }
+});
+
+// Ruta para crear una nueva cita
+app.post('/api/citas', async (req, res) => {
+  const { id_paciente, id_medico, fecha_cita, estado, notas } = req.body;
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO citas (id_paciente, id_medico, fecha_cita, estado, notas)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [id_paciente, id_medico, fecha_cita, estado || 'Programada', notas || '']
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Error al crear la cita');
+  }
+});
+
+// Ruta para eliminar una cita
+app.delete('/api/citas/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query('DELETE FROM citas WHERE id_cita = $1 RETURNING *', [id]);
+    if (result.rowCount === 0) {
+      return res.status(404).send('Cita no encontrada');
+    }
+    res.status(200).json({ message: 'Cita eliminada correctamente' });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Error al eliminar la cita');
   }
 });
 
@@ -82,6 +123,28 @@ app.get('/api/historiales', async (req, res) => {
   } catch (error) {
     console.error(error.message);
     res.status(500).send('Error al obtener los historiales médicos');
+  }
+});
+
+// Ruta para obtener pacientes
+app.get('/api/pacientes', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM pacientes');
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Error al obtener los pacientes');
+  }
+});
+
+// Ruta para obtener médicos
+app.get('/api/medicos', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT id_medico, nombre, apellido FROM medicos');
+    res.json(result.rows);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Error al obtener los médicos');
   }
 });
 
