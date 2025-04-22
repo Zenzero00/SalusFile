@@ -45,13 +45,18 @@ body {
 .main-content {
     flex-grow: 1;
     padding: 20px;
-    background-color: #E3F2FD;
+    background-color: #e3f2fd;
+}
+
+h1 {
+    font-size: 28px;
+    color: #1565c0;
 }
 
 .new-appointment {
-    background-color: #43A047;
+    background-color: #43a047;
     color: white;
-    padding: 10px;
+    padding: 10px 20px;
     border: none;
     border-radius: 4px;
     font-size: 16px;
@@ -60,7 +65,7 @@ body {
 }
 
 .new-appointment:hover {
-    background-color: #388E3C;
+    background-color: #388e3c;
 }
 
 .appointments-table {
@@ -79,7 +84,7 @@ body {
 }
 
 .appointments-table th {
-    background-color: #1565C0;
+    background-color: #1565c0;
     color: white;
 }
 

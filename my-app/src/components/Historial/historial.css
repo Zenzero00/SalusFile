@@ -58,19 +58,19 @@ body {
 .main-content {
     flex-grow: 1;
     padding: 20px;
-    background-color: #E3F2FD;
+    background-color: #e3f2fd;
 }
 
 /* Título */
 h1 {
     font-size: 28px;
     margin-bottom: 20px;
-    color: #1565C0;
+    color: #1565c0;
 }
 
 /* Botón "Nuevo Registro Médico" */
 .new-record {
-    background-color: #43A047;
+    background-color: #43a047;
     color: white;
     padding: 10px 20px;
     border: none;
@@ -81,7 +81,7 @@ h1 {
 }
 
 .new-record:hover {
-    background-color: #388E3C;
+    background-color: #388e3c;
 }
 
 /* Tabla de pacientes */
@@ -94,17 +94,16 @@ h1 {
     overflow: hidden;
 }
 
-.patients-table th {
-    background-color: #1565C0;
-    color: white;
-    padding: 12px;
-    text-align: left;
-}
-
+.patients-table th,
 .patients-table td {
     padding: 12px;
     border-bottom: 1px solid #ddd;
     text-align: left;
+}
+
+.patients-table th {
+    background-color: #1565c0;
+    color: white;
 }
 
 .patients-table tr:hover {

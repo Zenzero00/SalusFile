@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom'; // Agregado Outlet
+import { NavLink, Outlet } from 'react-router-dom';
 import './Layout.css';
 
 const Layout = () => {
@@ -7,6 +7,7 @@ const Layout = () => {
     localStorage.removeItem('token');
     window.location.href = '/login';
   };
+
   return (
     <div className="dashboard-container">
       <aside className="sidebar">
@@ -26,15 +27,15 @@ const Layout = () => {
               <NavLink to="/configuracion">Configuración</NavLink>
             </li>
             <li>
-              <NavLink to="/login" className="logout">
+              <button className="logout" onClick={handleLogout}>
                 Cerrar sesión
-              </NavLink>
+              </button>
             </li>
           </ul>
         </nav>
       </aside>
       <main className="main-content">
-        <Outlet /> {/* Renderiza las rutas hijas */}
+        <Outlet /> {/* Renderiza el contenido de las rutas hijas */}
       </main>
     </div>
   );

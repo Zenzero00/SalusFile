@@ -6,9 +6,10 @@ const Register = () => {
     email: '',
     password: '',
     confirmPassword: '',
+    rol: '',
+    nombre_usuario: '',
   });
 
-  // Maneja los cambios en los campos del formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -17,18 +18,15 @@ const Register = () => {
     }));
   };
 
-  // Maneja el envío del formulario
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Validación de contraseñas
     if (formData.password !== formData.confirmPassword) {
       alert('Las contraseñas no coinciden');
       return;
     }
 
     try {
-      // Enviar datos al backend
       const response = await fetch('http://localhost:3001/api/register', {
         method: 'POST',
         headers: {
@@ -37,6 +35,8 @@ const Register = () => {
         body: JSON.stringify({
           email: formData.email,
           password: formData.password,
+          rol: formData.rol,
+          nombre_usuario: formData.nombre_usuario,
         }),
       });
 
@@ -54,6 +54,16 @@ const Register = () => {
       <div className="register-container">
         <h2>Registrarse</h2>
         <form onSubmit={handleSubmit}>
+          <label htmlFor="nombre_usuario">Nombre de Usuario:</label>
+          <input
+            type="text"
+            id="nombre_usuario"
+            name="nombre_usuario"
+            value={formData.nombre_usuario}
+            onChange={handleChange}
+            required
+          />
+
           <label htmlFor="email">Correo Electrónico:</label>
           <input
             type="email"
@@ -83,6 +93,20 @@ const Register = () => {
             onChange={handleChange}
             required
           />
+
+          <label htmlFor="rol">Rol:</label>
+          <select
+            id="rol"
+            name="rol"
+            value={formData.rol}
+            onChange={handleChange}
+            required
+          >
+            <option value="">Selecciona un rol</option>
+            <option value="admin">Admin</option>
+            <option value="medico">Médico</option>
+            <option value="recepcionista">Recepcionista</option>
+          </select>
 
           <button type="submit">Registrarse</button>
         </form>
