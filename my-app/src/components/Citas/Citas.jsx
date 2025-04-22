@@ -5,6 +5,7 @@ const Citas = () => {
   const [appointments, setAppointments] = useState([]);
   const [patients, setPatients] = useState([]);
   const [medicos, setMedicos] = useState([]); // Lista de médicos
+  const [selectedAppointment, setSelectedAppointment] = useState(null); // Cita seleccionada para editar
   const [newAppointment, setNewAppointment] = useState({
     id_paciente: '',
     id_medico: '',
@@ -111,6 +112,37 @@ const Citas = () => {
     }
   };
 
+  // Manejar la edición de una cita
+  const handleEdit = (appointment) => {
+    setSelectedAppointment(appointment);
+  };
+
+  // Guardar cambios en la cita editada
+  const handleSaveEdit = async () => {
+    try {
+      const response = await fetch(`http://localhost:3001/api/citas/${selectedAppointment.id_cita}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(selectedAppointment),
+      });
+
+      if (!response.ok) throw new Error('Error al actualizar la cita');
+
+      await response.json();
+      alert('Cita actualizada correctamente');
+      window.location.reload(); // Recarga la página para mostrar los datos actualizados
+    } catch (error) {
+      alert(error.message);
+    }
+  };
+
+  // Cerrar el modal de edición
+  const closeModal = () => {
+    setSelectedAppointment(null);
+  };
+
   return (
     <div className="main-content">
       <h1>Gestión de Citas</h1>
@@ -194,6 +226,7 @@ const Citas = () => {
               <td>{app.estado}</td>
               <td>{app.notas}</td>
               <td>
+                <button className="edit-btn" onClick={() => handleEdit(app)}>Editar</button>
                 <button className="cancel-btn" onClick={() => handleDeleteAppointment(app.id_cita)}>
                   Cancelar
                 </button>
@@ -202,6 +235,41 @@ const Citas = () => {
           ))}
         </tbody>
       </table>
+
+      {/* Modal para editar cita */}
+      {selectedAppointment && (
+        <div className="modal">
+          <div className="modal-content">
+            <span className="close-btn" onClick={closeModal}>&times;</span>
+            <h2>Editar Cita</h2>
+            <label htmlFor="estado">Estado:</label>
+            <select
+              id="estado"
+              name="estado"
+              value={selectedAppointment.estado}
+              onChange={(e) =>
+                setSelectedAppointment((prev) => ({ ...prev, estado: e.target.value }))
+              }
+            >
+              <option value="Programada">Programada</option>
+              <option value="Completada">Completada</option>
+              <option value="Cancelada">Cancelada</option>
+            </select>
+
+            <label htmlFor="notas">Notas:</label>
+            <textarea
+              id="notas"
+              name="notas"
+              value={selectedAppointment.notas}
+              onChange={(e) =>
+                setSelectedAppointment((prev) => ({ ...prev, notas: e.target.value }))
+              }
+            ></textarea>
+
+            <button className="submit-btn" onClick={handleSaveEdit}>Guardar Cambios</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

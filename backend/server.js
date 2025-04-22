@@ -95,6 +95,28 @@ app.post('/api/citas', async (req, res) => {
   }
 });
 
+// Ruta para actualizar una cita
+app.put('/api/citas/:id', async (req, res) => {
+  const { id } = req.params;
+  const { estado, notas } = req.body;
+
+  try {
+    const result = await pool.query(
+      `UPDATE citas SET estado = $1, notas = $2 WHERE id_cita = $3 RETURNING *`,
+      [estado, notas, id]
+    );
+
+    if (result.rowCount === 0) {
+      return res.status(404).send('Cita no encontrada');
+    }
+
+    res.status(200).json(result.rows[0]);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Error al actualizar la cita');
+  }
+});
+
 // Ruta para eliminar una cita
 app.delete('/api/citas/:id', async (req, res) => {
   const { id } = req.params;
@@ -123,6 +145,40 @@ app.get('/api/historiales', async (req, res) => {
   } catch (error) {
     console.error(error.message);
     res.status(500).send('Error al obtener los historiales médicos');
+  }
+});
+
+// Ruta para crear un nuevo historial médico
+app.post('/api/historiales', async (req, res) => {
+  const { id_paciente, enfermedad, fecha_diagnostico, tratamiento, notas } = req.body;
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO historial_clinico (id_paciente, enfermedad, fecha_diagnostico, tratamiento, notas)
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [id_paciente, enfermedad, fecha_diagnostico, tratamiento, notas || '']
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Error al crear el historial médico');
+  }
+});
+
+// Ruta para eliminar un historial médico
+app.delete('/api/historiales/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const result = await pool.query('DELETE FROM historial_clinico WHERE id_historial = $1 RETURNING *', [id]);
+    if (result.rowCount === 0) {
+      return res.status(404).send('Historial médico no encontrado');
+    }
+    res.status(200).json({ message: 'Historial médico eliminado correctamente' });
+  } catch (error) {
+    console.error(error.message);
+    res.status(500).send('Error al eliminar el historial médico');
   }
 });
 
