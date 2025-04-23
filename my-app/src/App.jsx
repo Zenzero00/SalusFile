@@ -26,14 +26,14 @@ function App() {
 
         {/* Rutas protegidas */}
         <Route
-          path="/dashboard"
+          path="/"
           element={
             <PrivateRoute>
               <Layout />
             </PrivateRoute>
           }
         >
-          <Route index element={<Dashboard />} />
+          <Route path="dashboard" element={<Dashboard />} />
           <Route path="historial" element={<Historial />} />
           <Route path="citas" element={<Citas />} />
           <Route path="configuracion" element={<Configuracion />} />
