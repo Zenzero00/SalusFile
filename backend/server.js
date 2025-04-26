@@ -1,9 +1,9 @@
 // filepath: backend/server.js
+require('dotenv').config(); // Asegúrate de que esta línea esté presente al inicio del archivo
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const pool = require('./db');
-require('dotenv').config();
+const pool = require('./db'); // Conexión a la base de datos
 
 const app = express();
 
@@ -201,6 +201,16 @@ app.get('/api/medicos', async (req, res) => {
   } catch (error) {
     console.error(error.message);
     res.status(500).send('Error al obtener los médicos');
+  }
+});
+
+app.get('/api/test-db', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT NOW()');
+    res.status(200).json({ message: 'Conexión exitosa', time: result.rows[0] });
+  } catch (error) {
+    console.error('Error al conectar con la base de datos:', error.message);
+    res.status(500).json({ message: 'Error al conectar con la base de datos', error: error.message });
   }
 });
 

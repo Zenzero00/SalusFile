@@ -12,7 +12,7 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch('https://salus-file.vercel.app/api/login', {
+      const response = await fetch('https://salus-file.vercel.app/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
