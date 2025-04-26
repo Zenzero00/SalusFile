@@ -1,4 +1,3 @@
-// filepath: backend/server.js
 require('dotenv').config(); // Asegúrate de que esta línea esté presente al inicio del archivo
 const express = require('express');
 const cors = require('cors');

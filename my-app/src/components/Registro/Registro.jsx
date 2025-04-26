@@ -27,7 +27,7 @@ const Register = () => {
     }
 
     try {
-      const response = await fetch('https://salus-file.vercel.app/register', {
+      const response = await fetch('https://salus-file.vercel.app/api/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
