@@ -1,8 +1,9 @@
-require('dotenv').config(); // Asegúrate de que esta línea esté presente al inicio del archivo
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
-const pool = require('./db'); // Conexión a la base de datos
+const pool = require('./db');
+const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 const app = express();
 
@@ -10,20 +11,35 @@ const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
+// Middleware para verificar el token
+const authenticateToken = (req, res, next) => {
+  const token = req.headers['authorization'];
+  if (!token) return res.status(401).send('Acceso denegado');
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = decoded; // Agrega el usuario al objeto de la solicitud
+    next();
+  } catch (error) {
+    res.status(403).send('Token inválido');
+  }
+};
+
 // Ruta para registrar usuarios
 app.post('/api/register', async (req, res) => {
-  const { email, password, rol, nombre_usuario } = req.body;
+  const { nombre_usuario, email, password, rol, id_medico } = req.body;
 
   try {
     const result = await pool.query(
-      'INSERT INTO usuarios (email, password, rol, nombre_usuario) VALUES ($1, $2, $3, $4) RETURNING *',
-      [email, password, rol, nombre_usuario]
+      `INSERT INTO usuarios (nombre_usuario, email, password, rol, id_medico) 
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [nombre_usuario, email, password, rol, id_medico || null]
     );
 
     res.status(201).json(result.rows[0]);
   } catch (error) {
     if (error.code === '23505') { // Código de error para duplicados en PostgreSQL
-      res.status(400).send('El correo o nombre de usuario ya está registrado');
+      res.status(400).send('El nombre de usuario o correo ya está registrado');
     } else {
       console.error(error.message);
       res.status(500).send('Error al registrar el usuario');
@@ -36,7 +52,6 @@ app.post('/api/login', async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Busca el usuario por correo y contraseña
     const result = await pool.query(
       'SELECT * FROM usuarios WHERE email = $1 AND password = $2',
       [email, password]
@@ -44,47 +59,56 @@ app.post('/api/login', async (req, res) => {
 
     if (result.rows.length > 0) {
       const user = result.rows[0];
-      res.status(200).json({ token: 'fake-jwt-token', rol: user.rol });
+      const token = jwt.sign(
+        { id_usuario: user.id_usuario, rol: user.rol },
+        process.env.JWT_SECRET || 'defaultsecret',
+        { expiresIn: '1h' }
+      );
+      res.status(200).json({ token });
     } else {
       res.status(401).send('Credenciales incorrectas');
     }
   } catch (error) {
-    console.error(error.message);
-    res.status(500).send('Error al iniciar sesión');
+    console.error('Error en /api/login:', error.message);
+    res.status(500).send('Error interno del servidor');
   }
 });
 
 // Ruta para obtener citas
-app.get('/api/citas', async (req, res) => {
+app.get('/api/citas', authenticateToken, async (req, res) => {
   try {
-    const result = await pool.query(`
-      SELECT 
+    const result = await pool.query(
+      `SELECT 
         c.id_cita, 
-        c.fecha_cita, 
         p.nombre AS nombre_paciente, 
+        p.apellido AS apellido_paciente, 
         m.nombre AS nombre_medico, 
+        m.apellido AS apellido_medico, 
+        c.fecha_cita, 
         c.estado, 
-        c.notas
+        c.notas 
       FROM citas c
       JOIN pacientes p ON c.id_paciente = p.id_paciente
       JOIN medicos m ON c.id_medico = m.id_medico
-    `);
+      WHERE c.id_usuario = $1`,
+      [req.user.id_usuario]
+    );
     res.json(result.rows);
   } catch (error) {
-    console.error(error.message);
+    console.error('Error al obtener las citas:', error.message);
     res.status(500).send('Error al obtener las citas');
   }
 });
 
 // Ruta para crear una nueva cita
-app.post('/api/citas', async (req, res) => {
+app.post('/api/citas', authenticateToken, async (req, res) => {
   const { id_paciente, id_medico, fecha_cita, estado, notas } = req.body;
 
   try {
     const result = await pool.query(
-      `INSERT INTO citas (id_paciente, id_medico, fecha_cita, estado, notas)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [id_paciente, id_medico, fecha_cita, estado || 'Programada', notas || '']
+      `INSERT INTO citas (id_paciente, id_medico, fecha_cita, estado, notas, id_usuario)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [id_paciente, id_medico, fecha_cita, estado || 'Programada', notas || '', req.user.id_usuario]
     );
 
     res.status(201).json(result.rows[0]);
@@ -184,10 +208,22 @@ app.delete('/api/historiales/:id', async (req, res) => {
 // Ruta para obtener pacientes
 app.get('/api/pacientes', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM pacientes');
+    const result = await pool.query(`
+      SELECT 
+        id_paciente, 
+        nombre, 
+        apellido, 
+        fecha_nacimiento, 
+        sexo, 
+        direccion, 
+        telefono, 
+        email, 
+        fecha_registro 
+      FROM pacientes
+    `);
     res.json(result.rows);
   } catch (error) {
-    console.error(error.message);
+    console.error('Error al obtener los pacientes:', error.message);
     res.status(500).send('Error al obtener los pacientes');
   }
 });
@@ -195,21 +231,80 @@ app.get('/api/pacientes', async (req, res) => {
 // Ruta para obtener médicos
 app.get('/api/medicos', async (req, res) => {
   try {
-    const result = await pool.query('SELECT id_medico, nombre, apellido FROM medicos');
+    const result = await pool.query(`
+      SELECT 
+        id_medico, 
+        nombre, 
+        apellido, 
+        especialidad, 
+        telefono, 
+        email, 
+        num_colegiado, 
+        fecha_registro 
+      FROM medicos
+    `);
     res.json(result.rows);
   } catch (error) {
-    console.error(error.message);
+    console.error('Error al obtener los médicos:', error.message);
     res.status(500).send('Error al obtener los médicos');
   }
 });
 
-app.get('/api/test-db', async (req, res) => {
+// Ruta para obtener estadísticas del dashboard
+app.get('/api/dashboard-stats', async (req, res) => {
   try {
-    const result = await pool.query('SELECT NOW()');
-    res.status(200).json({ message: 'Conexión exitosa', time: result.rows[0] });
+    const citasResult = await pool.query('SELECT COUNT(*) AS total FROM citas');
+    const pacientesResult = await pool.query('SELECT COUNT(*) AS total FROM pacientes');
+    const historialesResult = await pool.query('SELECT COUNT(*) AS total FROM historial_clinico');
+
+    res.json({
+      citas: parseInt(citasResult.rows[0].total, 10),
+      pacientes: parseInt(pacientesResult.rows[0].total, 10),
+      historiales: parseInt(historialesResult.rows[0].total, 10),
+    });
   } catch (error) {
-    console.error('Error al conectar con la base de datos:', error.message);
-    res.status(500).json({ message: 'Error al conectar con la base de datos', error: error.message });
+    console.error('Error al obtener estadísticas:', error.message);
+    res.status(500).send('Error al obtener estadísticas');
+  }
+});
+
+// Ruta para obtener seguimientos
+app.get('/api/seguimientos', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        id_seguimiento, 
+        paciente, 
+        fecha, 
+        descripcion, 
+        estado 
+      FROM seguimientos
+    `);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error al obtener los seguimientos:', error.message);
+    res.status(500).send('Error al obtener los seguimientos');
+  }
+});
+
+// Ruta para obtener facturas
+app.get('/api/facturas', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        f.id_factura, 
+        p.nombre AS nombre_paciente, 
+        p.apellido AS apellido_paciente, 
+        f.monto, 
+        f.fecha_emision, 
+        f.estado 
+      FROM facturacion f
+      JOIN pacientes p ON f.id_paciente = p.id_paciente
+    `);
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error al obtener las facturas:', error.message);
+    res.status(500).send('Error al obtener las facturas');
   }
 });
 

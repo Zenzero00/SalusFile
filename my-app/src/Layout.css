@@ -1,75 +1,50 @@
-/* Layout.css */
-.sidebar a {
-  color: white;
-  text-decoration: none;
-  display: block;
-  padding: 10px;
-}
-
-.sidebar a:hover {
-  background: #0D47A1;
-}
-
-.sidebar a.active {
-  font-weight: bold;
-  border-left: 3px solid #43A047;
-  padding-left: 7px; /* Ajuste para el borde */
-}
-
-.logout {
-  background: none !important;
-  border: none;
-  color: #ff4444 !important;
-  cursor: pointer;
-}
-
+/* Estilo general */
 body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
+  display: flex;
+  height: 100vh;
+  overflow: hidden; /* Evita el desplazamiento de la página */
 }
 
 /* Contenedor principal */
 .layout-container {
   display: flex;
-  flex-direction: column;
   height: 100vh;
-}
-
-/* Encabezado fijo */
-.app-header {
-  background-color: white; /* Fondo blanco */
-  color: #1565c0; /* Texto azul oscuro */
-  padding: 10px 20px;
-  font-size: 24px;
-  font-weight: bold;
-  position: fixed;
-  top: 0;
-  left: 0;
   width: 100%;
-  z-index: 1000;
-  box-shadow: none; /* Elimina la sombra */
-  border-bottom: none; /* Elimina cualquier borde */
 }
 
-/* Contenedor del dashboard */
-.dashboard-container {
-  display: flex;
-  flex-grow: 1;
-  margin-top: 60px; /* Espacio para el encabezado */
-}
-
-/* Barra lateral */
+/* Barra lateral fija */
 .sidebar {
+  width: 250px;
   background-color: #1565c0;
   color: white;
-  width: 250px;
+  display: flex;
+  flex-direction: column;
   padding: 20px;
+  position: fixed; /* Hace que la barra lateral sea fija */
+  height: 100vh; /* Ocupa toda la altura de la ventana */
+  overflow-y: auto; /* Permite desplazarse si el contenido es demasiado largo */
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Agrega una sombra para separar visualmente el sidebar */
 }
 
+/* Nombre de la aplicación */
+.sidebar .app-name {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  text-align: center;
+  color: #ffffff;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.3); /* Línea divisoria */
+  padding-bottom: 10px;
+}
+
+/* Lista de navegación */
 .sidebar ul {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
 .sidebar ul li {
@@ -107,7 +82,11 @@ body {
 
 /* Contenido principal */
 .main-content {
-  flex-grow: 1;
-  padding: 20px;
-  background-color: #e3f2fd;
+  margin-left: 250px; /* Ajusta el margen para que no se superponga con el sidebar */
+  padding: 30px; /* Agrega espacio interno al contenido principal */
+  width: calc(100% - 250px); /* Ajusta el ancho del contenido principal */
+  background-color: #f9f9f9; /* Fondo más claro para el contenido */
+  overflow-y: auto; /* Permite desplazarse si el contenido es demasiado largo */
+  box-sizing: border-box; /* Asegura que el padding no afecte el ancho total */
+  border-left: 1px solid #ddd; /* Línea sutil para separar el contenido del sidebar */
 }

@@ -2,8 +2,10 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './components/Login/Login';
 import Register from './components/Registro/Registro';
 import Dashboard from './components/Dashboard/Dashboard';
-import Historial from './components/Historial/Historial';
-import Citas from './components/Citas/Citas';
+import Pacientes from './components/Pacientes/Pacientes';
+import Consultas from './components/Consultas/Consultas';
+import Facturacion from './components/Facturacion/Facturacion';
+import Seguimiento from './components/Seguimiento/Seguimiento';
 import Configuracion from './components/Config/Configuracion';
 import Layout from './Layout';
 import PrivateRoute from './PrivateRoute';
@@ -34,8 +36,10 @@ function App() {
           }
         >
           <Route path="dashboard" element={<Dashboard />} />
-          <Route path="historial" element={<Historial />} />
-          <Route path="citas" element={<Citas />} />
+          <Route path="pacientes" element={<Pacientes />} />
+          <Route path="consultas" element={<Consultas />} />
+          <Route path="facturacion" element={<Facturacion />} />
+          <Route path="seguimiento" element={<Seguimiento />} />
           <Route path="configuracion" element={<Configuracion />} />
         </Route>
       </Routes>
